@@ -1,0 +1,60 @@
+team_id,name,group_name,country_code,coach
+1,Mexico,A,MEX,
+2,South Africa,A,RSA,
+3,South Korea,A,KOR,
+4,Czech Republic,A,CZE,
+
+5,Canada,B,CAN,
+6,Bosnia and Herzegovina,B,BIH,
+7,Qatar,B,QAT,
+8,Switzerland,B,SUI,
+
+9,Brazil,C,BRA,
+10,Morocco,C,MAR,
+11,Haiti,C,HAI,
+12,Scotland,C,SCO,
+
+13,United States,D,USA,
+14,Paraguay,D,PAR,
+15,Australia,D,AUS,
+16,Turkey,D,TUR,
+
+17,Germany,E,GER,
+18,Curacao,E,CUW,
+19,Ivory Coast,E,CIV,
+20,Ecuador,E,ECU,
+
+21,Netherlands,F,NED,
+22,Japan,F,JPN,
+23,Sweden,F,SWE,
+24,Tunisia,F,TUN,
+
+25,Belgium,G,BEL,
+26,Egypt,G,EGY,
+27,Iran,G,IRN,
+28,New Zealand,G,NZL,
+
+29,Spain,H,ESP,
+30,Cape Verde,H,CPV,
+31,Saudi Arabia,H,KSA,
+32,Uruguay,H,URU,
+
+33,France,I,FRA,
+34,Senegal,I,SEN,
+35,Iraq,I,IRQ,
+36,Norway,I,NOR,
+
+37,Argentina,J,ARG,
+38,Algeria,J,ALG,
+39,Austria,J,AUT,
+40,Jordan,J,JOR,
+
+41,Portugal,K,POR,
+42,DR Congo,K,COD,
+43,Uzbekistan,K,UZB,
+44,Colombia,K,COL,
+
+45,England,L,ENG,
+46,Croatia,L,CRO,
+47,Ghana,L,GHA,
+48,Panama,L,PAN
