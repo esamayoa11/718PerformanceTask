@@ -8,5 +8,6 @@ const {
 
 router.post("/", createPrediction);
 router.get("/user/:userId", getUserPredictions);
+router.delete("/", deletePrediction);
 
 module.exports = router;

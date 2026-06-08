@@ -1,68 +1,118 @@
 import { useEffect, useState } from "react";
 
 function App() {
-  // =========================
-  // STATE
-  // =========================
   const [matches, setMatches] = useState([]);
-  const [predictions, setPredictions] = useState({});
+  const [myPredictions, setMyPredictions] = useState([]);
+  const [form, setForm] = useState({});
 
   // =========================
-  // LOAD MATCHES FROM BACKEND
+  // LOAD MATCHES
   // =========================
   useEffect(() => {
     fetch("http://localhost:3001/api/matches")
       .then((res) => res.json())
-      .then((data) => setMatches(data))
-      .catch((err) => console.error("Error fetching matches:", err));
+      .then(setMatches)
+      .catch(console.error);
   }, []);
 
   // =========================
-  // HANDLE INPUT CHANGE
+  // LOAD PREDICTIONS
+  // =========================
+  const loadPredictions = () => {
+    fetch("http://localhost:3001/api/predictions/user/1")
+      .then((res) => res.json())
+      .then(setMyPredictions)
+      .catch(console.error);
+  };
+
+  useEffect(() => {
+    loadPredictions();
+  }, []);
+
+  // =========================
+  // HANDLE INPUTS
   // =========================
   const handleChange = (matchId, field, value) => {
-    setPredictions((prev) => ({
+    setForm((prev) => ({
       ...prev,
       [matchId]: {
         ...prev[matchId],
-        [field]: value,
+        [field]: value === "" ? "" : Math.max(0, Number(value)),
       },
     }));
   };
 
   // =========================
-  // SUBMIT PREDICTION
+  // EDIT → LOAD INTO FORM
   // =========================
-  const submitPrediction = async (matchId) => {
-    const prediction = predictions[matchId];
+  const startEdit = (matchId) => {
+    const existing = myPredictions.find(
+      (p) => Number(p.match_id) === Number(matchId)
+    );
 
-    if (!prediction) {
-      alert("Enter scores first");
-      return;
-    }
+    if (!existing) return;
 
-    try {
-      const res = await fetch("http://localhost:3001/api/predictions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: 1, // TEMP USER (we'll fix auth later)
-          match_id: matchId,
-          predicted_home_score: prediction.home,
-          predicted_away_score: prediction.away,
-        }),
-      });
+    setForm((prev) => ({
+      ...prev,
+      [matchId]: {
+        home: existing.predicted_home_score,
+        away: existing.predicted_away_score,
+      },
+    }));
+  };
 
-      const data = await res.json();
-      console.log("Saved:", data);
+  // =========================
+  // SAVE / UPSERT
+  // =========================
+  const savePrediction = async (matchId) => {
+    const prediction = form[matchId];
 
-      alert("Prediction saved!");
-    } catch (err) {
-      console.error(err);
-      alert("Error saving prediction");
-    }
+    if (!prediction) return alert("Enter scores first");
+
+    const res = await fetch("http://localhost:3001/api/predictions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: 1,
+        match_id: matchId,
+        predicted_home_score: prediction.home,
+        predicted_away_score: prediction.away,
+        predicted_winner_team_id: null,
+      }),
+    });
+
+    const saved = await res.json();
+
+    setMyPredictions((prev) => {
+      const filtered = prev.filter(
+        (p) => Number(p.match_id) !== Number(matchId)
+      );
+      return [...filtered, saved];
+    });
+  };
+
+  // =========================
+  // DELETE
+  // =========================
+  const deletePrediction = async (matchId) => {
+    await fetch("http://localhost:3001/api/predictions", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: 1,
+        match_id: matchId,
+      }),
+    });
+
+    setMyPredictions((prev) =>
+      prev.filter((p) => Number(p.match_id) !== Number(matchId))
+    );
+
+    setForm((prev) => {
+      const copy = { ...prev };
+      delete copy[matchId];
+      return copy;
+    });
   };
 
   // =========================
@@ -70,53 +120,120 @@ function App() {
   // =========================
   return (
     <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1>🏆 World Cup Matches</h1>
+      <h1>2026 FIFA World Cup Matches</h1>
 
-      {matches.map((match) => (
-        <div
-          key={match.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            marginBottom: "10px",
-            borderRadius: "8px",
-          }}
-        >
-          {/* MATCH INFO */}
-          <h3>
-            Match #{match.fifa_match_number} — Team {match.home_team_id} vs Team{" "}
-            {match.away_team_id}
-          </h3>
+      {matches.map((match) => {
+        const existing = myPredictions.find(
+          (p) => Number(p.match_id) === Number(match.id)
+        );
 
-          <p>{match.round}</p>
+        const current = form[match.id] || {};
 
-          {/* INPUTS */}
-          <div>
-            <input
-              type="number"
-              placeholder="Home"
-              onChange={(e) =>
-                handleChange(match.id, "home", e.target.value)
-              }
-              style={{ width: "60px", marginRight: "10px" }}
-            />
+        return (
+          <div
+            key={match.id}
+            style={{
+              border: "1px solid #ccc",
+              padding: "14px",
+              marginBottom: "12px",
+              borderRadius: "10px",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            {/* ================= LEFT SIDE ================= */}
+            <div style={{ flex: 1 }}>
+              <h3>
+                Match #{match.fifa_match_number} —{" "}
+                {match.home_team_name} vs {match.away_team_name}
+              </h3>
 
-            <input
-              type="number"
-              placeholder="Away"
-              onChange={(e) =>
-                handleChange(match.id, "away", e.target.value)
-              }
-              style={{ width: "60px", marginRight: "10px" }}
-            />
+              <p>{match.round}</p>
+              <p>{new Date(match.match_date).toLocaleString()}</p>
 
-            {/* SUBMIT */}
-            <button onClick={() => submitPrediction(match.id)}>
-              Submit Prediction
-            </button>
+              <div style={{ marginTop: "10px" }}>
+                <input
+                  type="number"
+                  min="0"
+                  value={current.home ?? ""}
+                  placeholder="Home"
+                  onChange={(e) =>
+                    handleChange(match.id, "home", e.target.value)
+                  }
+                  style={{ width: "60px", marginRight: "10px" }}
+                />
+
+                <input
+                  type="number"
+                  min="0"
+                  value={current.away ?? ""}
+                  placeholder="Away"
+                  onChange={(e) =>
+                    handleChange(match.id, "away", e.target.value)
+                  }
+                  style={{ width: "60px", marginRight: "10px" }}
+                />
+              </div>
+
+              <div style={{ marginTop: "10px" }}>
+                <button onClick={() => savePrediction(match.id)}>
+                  💾 Save / Update
+                </button>
+              </div>
+            </div>
+
+            {/* ================= RIGHT SIDE (IMPROVED UI ONLY) ================= */}
+            <div
+              style={{
+                width: "220px",
+                borderLeft: "2px solid #eee",
+                paddingLeft: "15px",
+                textAlign: "center",
+              }}
+            >
+              <h4>Prediction</h4>
+
+              <div
+                style={{
+                  fontSize: "22px",
+                  fontWeight: "bold",
+                  minHeight: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {existing
+                  ? `${existing.predicted_home_score} - ${existing.predicted_away_score}`
+                  : "—"}
+              </div>
+
+              <div style={{ marginTop: "6px", minHeight: "20px" }}>
+                {existing ? (
+                  <span style={{ color: "green" }}>✅ Locked In</span>
+                ) : (
+                  <span style={{ color: "#999" }}>
+                    No prediction yet
+                  </span>
+                )}
+              </div>
+
+              <div style={{ marginTop: "12px" }}>
+                <button onClick={() => startEdit(match.id)}>
+                  ✏️ Edit
+                </button>
+
+                <button
+                  onClick={() => deletePrediction(match.id)}
+                  style={{ marginLeft: "10px", color: "red" }}
+                >
+                  🗑 Delete
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
