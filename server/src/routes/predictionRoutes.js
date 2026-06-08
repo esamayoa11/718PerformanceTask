@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   createPrediction,
   getUserPredictions,
+  deletePrediction,
 } = require("../controllers/predictionController");
 
 router.post("/", createPrediction);
