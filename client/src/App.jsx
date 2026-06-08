@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
 function App() {
+
+  const USER_ID = 1; 
+  
   const [matches, setMatches] = useState([]);
   const [myPredictions, setMyPredictions] = useState([]);
   const [form, setForm] = useState({});

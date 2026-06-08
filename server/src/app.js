@@ -4,11 +4,13 @@ require("dotenv").config();
 
 const matchRoutes = require("./routes/matchRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", authRoutes);
 
 // Routes
 app.use("/api/matches", matchRoutes);
