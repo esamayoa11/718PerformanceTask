@@ -1,122 +1,124 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // =========================
+  // STATE
+  // =========================
+  const [matches, setMatches] = useState([]);
+  const [predictions, setPredictions] = useState({});
 
+  // =========================
+  // LOAD MATCHES FROM BACKEND
+  // =========================
+  useEffect(() => {
+    fetch("http://localhost:3001/api/matches")
+      .then((res) => res.json())
+      .then((data) => setMatches(data))
+      .catch((err) => console.error("Error fetching matches:", err));
+  }, []);
+
+  // =========================
+  // HANDLE INPUT CHANGE
+  // =========================
+  const handleChange = (matchId, field, value) => {
+    setPredictions((prev) => ({
+      ...prev,
+      [matchId]: {
+        ...prev[matchId],
+        [field]: value,
+      },
+    }));
+  };
+
+  // =========================
+  // SUBMIT PREDICTION
+  // =========================
+  const submitPrediction = async (matchId) => {
+    const prediction = predictions[matchId];
+
+    if (!prediction) {
+      alert("Enter scores first");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:3001/api/predictions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: 1, // TEMP USER (we'll fix auth later)
+          match_id: matchId,
+          predicted_home_score: prediction.home,
+          predicted_away_score: prediction.away,
+        }),
+      });
+
+      const data = await res.json();
+      console.log("Saved:", data);
+
+      alert("Prediction saved!");
+    } catch (err) {
+      console.error(err);
+      alert("Error saving prediction");
+    }
+  };
+
+  // =========================
+  // UI
+  // =========================
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+      <h1>🏆 World Cup Matches</h1>
+
+      {matches.map((match) => (
+        <div
+          key={match.id}
+          style={{
+            border: "1px solid #ccc",
+            padding: "10px",
+            marginBottom: "10px",
+            borderRadius: "8px",
+          }}
         >
-          Count is {count}
-        </button>
-      </section>
+          {/* MATCH INFO */}
+          <h3>
+            Match #{match.fifa_match_number} — Team {match.home_team_id} vs Team{" "}
+            {match.away_team_id}
+          </h3>
 
-      <div className="ticks"></div>
+          <p>{match.round}</p>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          {/* INPUTS */}
+          <div>
+            <input
+              type="number"
+              placeholder="Home"
+              onChange={(e) =>
+                handleChange(match.id, "home", e.target.value)
+              }
+              style={{ width: "60px", marginRight: "10px" }}
+            />
+
+            <input
+              type="number"
+              placeholder="Away"
+              onChange={(e) =>
+                handleChange(match.id, "away", e.target.value)
+              }
+              style={{ width: "60px", marginRight: "10px" }}
+            />
+
+            {/* SUBMIT */}
+            <button onClick={() => submitPrediction(match.id)}>
+              Submit Prediction
+            </button>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      ))}
+    </div>
+  );
 }
 
-export default App
+export default App;
