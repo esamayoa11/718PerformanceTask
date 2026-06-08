@@ -13,7 +13,7 @@ function App() {
   // LOAD MATCHES
   // =========================
   useEffect(() => {
-    fetch("http://localhost:3001/api/matches")
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/matches`)
       .then((res) => res.json())
       .then(setMatches)
       .catch(console.error);
@@ -23,7 +23,7 @@ function App() {
   // LOAD PREDICTIONS
   // =========================
   const loadPredictions = () => {
-    fetch("http://localhost:3001/api/predictions/user/1")
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/predictions/user/1`)
       .then((res) => res.json())
       .then(setMyPredictions)
       .catch(console.error);
@@ -73,7 +73,7 @@ function App() {
 
     if (!prediction) return alert("Enter scores first");
 
-    const res = await fetch("http://localhost:3001/api/predictions", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/predictions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -99,7 +99,7 @@ function App() {
   // DELETE
   // =========================
   const deletePrediction = async (matchId) => {
-    await fetch("http://localhost:3001/api/predictions", {
+    await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/predictions`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
