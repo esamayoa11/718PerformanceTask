@@ -7,6 +7,7 @@ function App() {
   const [matches, setMatches] = useState([]);
   const [myPredictions, setMyPredictions] = useState([]);
   const [form, setForm] = useState({});
+  const [tab, setTab] = useState("all");
 
   // =========================
   // LOAD MATCHES
@@ -118,13 +119,50 @@ function App() {
     });
   };
 
-  // =========================
-  // UI
-  // =========================
-  return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1>2026 FIFA World Cup Matches</h1>
+// =========================
+// UI
+// =========================
+return (
+  <div style={{ padding: "20px", fontFamily: "Arial" }}>
 
+    <div style={{ textAlign: "center", marginBottom: "15px" }}>
+      <h1 style={{ fontSize: "36px", marginBottom: "5px" }}>
+        The World's Smallest Platform
+      </h1>
+
+      <h1 style={{ fontSize: "36px", marginTop: "0" }}>
+        for the World's Largest Sporting Event
+      </h1>
+
+      <p style={{ marginTop: "10px", color: "#666" }}>
+        ⚽ A family-style prediction game built around the FIFA World Cup.
+      </p>
+    </div>
+
+    {/* GAME BOX */}
+    <div
+      style={{
+        marginTop: "15px",
+        marginBottom: "20px",
+        padding: "15px",
+        border: "1px solid #ddd",
+        borderRadius: "12px",
+        backgroundColor: "#fafafa"
+      }}
+    >
+      <h2 style={{ marginBottom: "10px" }}>
+        Pick Your Winners Tournament 2026 (Group Stage)
+      </h2>
+
+      <h3>How it works:</h3>
+
+      <ul style={{ marginTop: "10px", lineHeight: "1.6" }}>
+        <li> Predict every match winner/score before kickoff</li>
+        <li> Predictions lock once the match starts</li>
+        <li> Edit or delete picks anytime before kickoff</li>
+        <li> Exact score = highest reward</li>
+      </ul>
+    </div>
       {matches.map((match) => {
         const existing = myPredictions.find(
           (p) => Number(p.match_id) === Number(match.id)
