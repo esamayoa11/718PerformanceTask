@@ -232,7 +232,7 @@ return (
                 textAlign: "center",
               }}
             >
-              <h4>Prediction</h4>
+              <h4>Your Prediction</h4>
 
               <div
                 style={{
